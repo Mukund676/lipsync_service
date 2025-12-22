@@ -8,11 +8,29 @@ An end-to-end pipeline that generates lip-synced videos from an input video and 
 * **Optimization:** Automatic 25fps frame-rate conversion and audio pre-processing.
 * **Architecture:** Asynchronous "Manager-Worker" pattern to handle long-running inference tasks without HTTP timeouts.
 
-## 🛠️ Tech Stack
+## ⚖️ Model Trade Study
+To select the best open-source model, I evaluated three state-of-the-art options based on visual quality, inference speed, and realism:
+
+| Model | Pros | Cons | Verdict |
+| :--- | :--- | :--- | :--- |
+| **Wav2Lip** | Very fast inference; robust lip-sync accuracy. | Low resolution outputs (96x96); struggles with HD faces; strictly modifies lips without broader facial context. | ❌ Rejected (Low fidelity) |
+| **SadTalker** | Generates full head motion from audio; good for static images. | Slower inference; expression can feel robotic ("uncanny valley"); often drifts from the original video identity. | ❌ Rejected (Unnatural motion) |
+| **MuseTalk** | **High Fidelity (256x256 latent diffusion);** Real-time capable (30fps+ on A10G); modifying upper-face expressions for realism. | Requires higher VRAM (12GB+); sensitive to bounding box shifts. | ✅ **Selected** |
+
+**Why MuseTalk?**
+It strikes the best balance for a production service. Unlike Wav2Lip, it generates sharp, high-res mouth regions suitable for modern video standards. Unlike SadTalker, it preserves the original video's head pose and personality, only modifying the necessary facial region.
+
+## 🛠️ Tech Stack & Hardware
 * **Infrastructure:** Modal (Python SDK)
-* **Model:** MuseTalk (PyTorch/Diffusers)
-* **API:** FastAPI
-* **Hardware:** NVIDIA A10G (Remote)
+* **Framework:** PyTorch / Diffusers / FastAPI
+* **GPU Hardware:** NVIDIA A10G (24GB VRAM)
+
+### Hardware Selection Logic
+I chose the **NVIDIA A10G** over the T4 or A100 for this specific workload:
+* **A10G (Selected):** The "Sweet Spot." It provides 24GB VRAM (necessary to hold MuseTalk, VAE, and Whisper models simultaneously without offloading) and offers fast fp16 inference.
+* **NVIDIA T4:** While cheaper, the T4 (16GB) is significantly slower for diffusion-based models and risks OOM (Out of Memory) errors during high-res generation.
+* **NVIDIA A100:** While faster, the cost per hour is ~3-4x higher than A10G. The inference speed gain for this specific model (which is already near real-time on A10G) does not justify the extra cost.
+
 
 ## 📦 Setup & Deployment
 
