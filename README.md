@@ -49,7 +49,7 @@ I have provided a client-side script to test latency and download the result aut
 python benchmark.py
 ```
 
-Direct API Usage (cURL)
+**Direct API Usage (cURL)**
 
 You can also trigger the inference manually with the REST API.
 
