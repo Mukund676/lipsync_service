@@ -40,7 +40,7 @@ _Note: The first deployment may take 5-10 minutes. Subsequent deployments are fa
 ### Running the Benchmark Script
 
 I have provided a client-side script to test latency and download the result automatically.
-1. Place a \verb|test_video.mp4| and \verb|test_audio.wav| in the root directory.
+1. Place a `test_video.mp4` and `test_audio.wav` in the root directory.
 
 2. Update the API_URL in benchmark.py with your deployed Modal URL.
 
