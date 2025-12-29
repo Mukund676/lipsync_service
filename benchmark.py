@@ -34,7 +34,7 @@ def run_benchmark(video_path, audio_path):
     # 2. Poll for Completion
     status = "processing"
     while status == "processing":
-        time.sleep(2) # Polling interval
+        time.sleep(5) # Polling interval
         r = requests.get(f"{API_URL}/status/{call_id}")
         res_data = r.json()
         

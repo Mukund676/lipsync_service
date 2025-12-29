@@ -59,7 +59,6 @@ def download_models():
     hf_hub_download(repo_id="TMElyralab/MuseTalk", subfolder="musetalk", filename="musetalk.json", local_dir=base_path)
     hf_hub_download(repo_id="TMElyralab/MuseTalk", subfolder="musetalk", filename="pytorch_model.bin", local_dir=base_path)
 
-    # --- UNIVERSAL FIX ---
     if os.path.exists(f"{musetalk_path}/musetalk.json") and not os.path.exists(f"{musetalk_path}/config.json"):
         shutil.copy(f"{musetalk_path}/musetalk.json", f"{musetalk_path}/config.json")
     if os.path.exists(f"{musetalk_path}/pytorch_model.bin") and not os.path.exists(f"{musetalk_path}/unet.pth"):
@@ -109,6 +108,8 @@ def run_inference_task(job_id: str, video_filename: str, audio_filename: str):
     import sys
     import yaml
     import shutil
+
+    vol.reload()
     sys.path.append("/root/MuseTalk")
     
     base_dir = Path("/data")
@@ -149,7 +150,6 @@ def run_inference_task(job_id: str, video_filename: str, audio_filename: str):
     try:
         subprocess.run(cmd, cwd="/root/MuseTalk", check=True)
         
-        # --- FIXED FILE DETECTION ---
         # MuseTalk output is hidden inside a 'v15' subfolder
         # We search recursively using rglob
         generated_files = list(job_dir.rglob("*.mp4"))
@@ -171,6 +171,7 @@ def run_inference_task(job_id: str, video_filename: str, audio_filename: str):
             # Move the file from 'v15' folder to the main job folder
             print(f"Found output video: {output_files[0]}")
             shutil.move(str(output_files[0]), str(output_path))
+            vol.commit()
             return {"status": "completed", "path": str(output_path)}
         else:
             # Debugging info in case it fails again
